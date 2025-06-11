@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-interface DijkstraGridProps {
+interface PathfinderGridProps {
   width: number;
   height: number;
 }
@@ -17,7 +17,7 @@ type MouseCoordinates = {
   y: number;
 };
 
-function DijkstraGrid({ width, height }: DijkstraGridProps) {
+function PathfinderGrid({ width, height }: PathfinderGridProps) {
   const cellSize = 50;
   const gridRef = useRef<HTMLDivElement>(null);
   const [grid, setGrid] = useState(() => {
@@ -375,4 +375,4 @@ function DijkstraGrid({ width, height }: DijkstraGridProps) {
   );
 }
 
-export default DijkstraGrid;
+export default PathfinderGrid;

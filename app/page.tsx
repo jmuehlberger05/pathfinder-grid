@@ -1,9 +1,9 @@
-import DijkstraGrid from "@/components/dijkstra-grid";
+import PathfinderGrid from "@/components/pathfinder-grid";
 
 export default function Home() {
   return (
     <main>
-      <DijkstraGrid width={10} height={10} />
+      <PathfinderGrid width={10} height={10} />
     </main>
   );
 }
