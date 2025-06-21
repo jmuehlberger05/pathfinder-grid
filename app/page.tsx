@@ -1,9 +1,10 @@
-import PathfinderGrid from "@/components/pathfinder-grid";
+// import PathfinderGrid from "@/components/pathfinder-grid";
+import PathfinderGridV2 from "@/components/pathfinder-grid-v2";
 
 export default function Home() {
   return (
     <main>
-      <PathfinderGrid width={10} height={10} />
+      <PathfinderGridV2 columns={10} rows={10} />
     </main>
   );
 }
