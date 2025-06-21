@@ -17,6 +17,12 @@ export enum CellType {
   Empty,
 }
 
+export enum DrawingMode {
+  Wall = "wall",
+  Start = "start",
+  End = "end",
+}
+
 export type GridCell = {
   type: CellType;
 };

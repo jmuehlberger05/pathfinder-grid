@@ -17,7 +17,7 @@ export const calculatePath = async (
   start: CellCoordinates,
   end: CellCoordinates,
   updateView: (grid: GridData) => void
-): Promise<{ gridData: GridData; path: Path }> => {
+): Promise<{ gridData: GridData; path: Path; successful: boolean }> => {
   let newGrid = grid;
   let calculatedPath: Path | null = null;
 
@@ -83,15 +83,11 @@ export const calculatePath = async (
     );
   }
 
-  if (!calculatedPath) {
-    alert("No path found after all iterations.");
-  }
-  // Implement pathfinding algorithm here
-  // For now, just return the original grid
   updateView(newGrid);
   return {
     gridData: newGrid,
     path: calculatedPath ? calculatedPath : [],
+    successful: calculatedPath !== null,
   };
 };
 

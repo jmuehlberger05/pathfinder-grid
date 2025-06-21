@@ -4,11 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import {
   CellCoordinates,
   CellType,
+  DrawingMode,
   GridCell,
   GridData,
   MouseCoordinates,
+  Path,
 } from "./types";
 import { calculatePath } from "./calculatePath";
+import PathfinderControls from "./pathfinder-controls";
 
 interface PathfinderGridV2Props {
   rows: number;
@@ -132,15 +135,13 @@ function PathfinderGridV2({ rows, columns }: PathfinderGridV2Props) {
   const [grid, setGrid] = useState<GridData>(() =>
     returnEmptyGrid(rows, columns)
   );
+  const [result, setResult] = useState<{
+    successful: boolean;
+    path?: Path;
+  } | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
   // #region Drawing
-
-  enum DrawingMode {
-    Wall = "wall",
-    Start = "start",
-    End = "end",
-  }
 
   const [drawingMode, setDrawingMode] = useState<DrawingMode>(DrawingMode.Wall);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -246,6 +247,7 @@ function PathfinderGridV2({ rows, columns }: PathfinderGridV2Props) {
 
   // * Reset the grid to empty state ✅
   const resetGrid = () => {
+    setResult(null);
     setGrid(() => returnEmptyGrid(rows, columns));
   };
 
@@ -255,8 +257,26 @@ function PathfinderGridV2({ rows, columns }: PathfinderGridV2Props) {
     setGrid(cloneGrid(newGrid));
   };
 
+  const resetCalculatedCells = () => {
+    setResult(null);
+    setGrid((prevGrid) =>
+      cloneGrid(
+        prevGrid.map((row) =>
+          row.map((cell) => {
+            if (cell.type === CellType.Path || cell.type === CellType.Visited) {
+              return { ...cell, type: CellType.Empty };
+            }
+            return cell;
+          })
+        )
+      )
+    );
+  };
+
   // * Run the algorithm
   const runAlgorithm = async () => {
+    resetCalculatedCells();
+
     const startCells = findCellsByTypes([CellType.Start], grid);
     const endCells = findCellsByTypes([CellType.End], grid);
 
@@ -276,7 +296,7 @@ function PathfinderGridV2({ rows, columns }: PathfinderGridV2Props) {
       return;
     }
     setIsRunning(true);
-    const { gridData, path } = await calculatePath(
+    const { gridData, path, successful } = await calculatePath(
       grid,
       startCells[0],
       endCells[0],
@@ -287,7 +307,11 @@ function PathfinderGridV2({ rows, columns }: PathfinderGridV2Props) {
     });
 
     setGrid(gridData);
-    console.log("Path found:", path);
+
+    if (successful) {
+      setResult({ successful: true, path });
+      console.log("Path found:", path);
+    }
 
     // console.log("Running algorithm on grid:", gridData);
   };
@@ -345,53 +369,21 @@ function PathfinderGridV2({ rows, columns }: PathfinderGridV2Props) {
           </div>
         ))}
       </div>
-      <aside className="controls pt-2">
-        <h2 className="font-bold text-xl pb-4">Shitty Pathfinder Algorithm</h2>
-        {/* Drawing Mode Selector */}
-        <div className="grid grid-cols-3 pb-4 w-full">
-          <button
-            onClick={() => setDrawingMode(DrawingMode.Wall)}
-            className={`clear px-4 py-1  hover:bg-neutral-200 border border-neutral-300 rounded-l 
-                ${
-                  drawingMode === "wall" ? "bg-neutral-300" : "bg-neutral-100"
-                }`}
-          >
-            Wall
-          </button>
-          <button
-            onClick={() => setDrawingMode(DrawingMode.Start)}
-            className={`clear px-4 py-1  hover:bg-neutral-200 border-y border-neutral-300 ${
-              drawingMode === "start" ? "bg-neutral-300" : "bg-neutral-100"
-            }`}
-          >
-            Start
-          </button>
-          <button
-            onClick={() => setDrawingMode(DrawingMode.End)}
-            className={`clear px-4 py-1 hover:bg-neutral-200 rounded-r border border-neutral-300 ${
-              drawingMode === "end" ? "bg-neutral-300" : "bg-neutral-100"
-            }`}
-          >
-            End
-          </button>
-        </div>
-        {/* Actions */}
-        <div className="flex flex-col gap-2">
-          <button
-            onClick={resetGrid}
-            className="clear px-4 py-1 bg-neutral-200 hover:bg-neutral-300 rounded"
-          >
-            Reset the Grid
-          </button>
-          <button
-            onClick={runAlgorithm}
-            className="clear px-4 py-1 bg-neutral-200 hover:bg-neutral-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={isRunning}
-          >
-            Run the Algorithm
-          </button>
-        </div>
-      </aside>
+      <PathfinderControls
+        drawingMode={drawingMode}
+        setDrawingMode={setDrawingMode}
+        resetGrid={resetGrid}
+        resetCalculatedCells={resetCalculatedCells}
+        runAlgorithm={runAlgorithm}
+        isRunning={isRunning}
+        result={
+          result
+            ? result.path
+              ? "Path found with " + (result.path.length - 2) + " steps."
+              : "No path found."
+            : null
+        }
+      />
     </div>
   );
 }
